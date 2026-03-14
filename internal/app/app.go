@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ricky/oc-companion/internal/api"
 	"github.com/ricky/oc-companion/internal/config"
 )
 
@@ -20,6 +21,9 @@ func New(cfg config.Config) *App {
 }
 
 func (a *App) Run(ctx context.Context) error {
+	logger := slog.Default()
+	registry := api.NewRegistry()
+
 	if err := ensureSocketDir(a.cfg.SocketPath); err != nil {
 		return err
 	}
@@ -42,10 +46,37 @@ func (a *App) Run(ctx context.Context) error {
 	}
 
 	slog.Info("oc-companion started", "config", a.cfg.Summary())
+	go func() {
+		<-ctx.Done()
+		_ = listener.Close()
+	}()
 
-	<-ctx.Done()
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
 
-	return ctx.Err()
+			if isTemporaryError(err) {
+				logger.Warn("temporary accept error", "error", err)
+				continue
+			}
+
+			return err
+		}
+
+		go api.ServeConnection(ctx, logger, conn, registry)
+	}
+}
+
+func isTemporaryError(err error) bool {
+	var netError net.Error
+	if errors.As(err, &netError) {
+		return netError.Temporary()
+	}
+
+	return false
 }
 
 func ensureSocketDir(socketPath string) error {

@@ -69,4 +69,3 @@ func removeStaleSocket(socketPath string) error {
 
 	return os.Remove(socketPath)
 }
-

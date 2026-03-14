@@ -96,4 +96,3 @@ func normalizeFormat(value string) string {
 func (c Config) Summary() string {
 	return fmt.Sprintf("socket=%s webhook_base=%s log_level=%s log_format=%s shutdown_timeout=%s", c.SocketPath, c.WebhookBaseURL, c.LogLevel, c.LogFormat, c.ShutdownTimeout)
 }
-

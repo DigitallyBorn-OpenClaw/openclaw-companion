@@ -14,6 +14,7 @@ This repository is for **oc-companion**, a companion process for OpenClaw.
 - Privilege boundary: dedicated Linux user for this process.
 - Provider integrations are owned by `oc-companion` and not directly exposed.
 - OpenClaw receives asynchronous events through webhook callbacks.
+- Primary implementation language: Go.
 
 ## Initial Tooling Scope
 - Notify OpenClaw when a new Gmail message is received (via GCP-hosted Pub/Sub topic).

@@ -1,0 +1,99 @@
+package config
+
+import (
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+)
+
+const (
+	defaultAddr            = "/run/oc-companion/companion.sock"
+	defaultShutdownTimeout = 10 * time.Second
+	defaultLogLevel        = "info"
+	defaultLogFormat       = "text"
+)
+
+type Config struct {
+	SocketPath      string
+	WebhookBaseURL  string
+	LogLevel        string
+	LogFormat       string
+	ShutdownTimeout time.Duration
+}
+
+func Load() (Config, error) {
+	cfg := Config{
+		SocketPath:      getEnv("OC_COMPANION_SOCKET_PATH", defaultAddr),
+		WebhookBaseURL:  strings.TrimSpace(os.Getenv("OC_OPENCLAW_WEBHOOK_BASE_URL")),
+		LogLevel:        normalizeLevel(getEnv("OC_COMPANION_LOG_LEVEL", defaultLogLevel)),
+		LogFormat:       normalizeFormat(getEnv("OC_COMPANION_LOG_FORMAT", defaultLogFormat)),
+		ShutdownTimeout: getEnvDuration("OC_COMPANION_SHUTDOWN_TIMEOUT", defaultShutdownTimeout),
+	}
+
+	if cfg.WebhookBaseURL == "" {
+		return Config{}, errors.New("OC_OPENCLAW_WEBHOOK_BASE_URL is required")
+	}
+
+	if cfg.SocketPath == "" {
+		return Config{}, errors.New("OC_COMPANION_SOCKET_PATH must not be empty")
+	}
+
+	return cfg, nil
+}
+
+func getEnv(key string, fallback string) string {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+
+	return value
+}
+
+func getEnvDuration(key string, fallback time.Duration) time.Duration {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+
+	if seconds, err := strconv.Atoi(value); err == nil {
+		if seconds <= 0 {
+			return fallback
+		}
+
+		return time.Duration(seconds) * time.Second
+	}
+
+	duration, err := time.ParseDuration(value)
+	if err != nil || duration <= 0 {
+		return fallback
+	}
+
+	return duration
+}
+
+func normalizeLevel(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "debug", "info", "warn", "error":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return defaultLogLevel
+	}
+}
+
+func normalizeFormat(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "text", "json":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return defaultLogFormat
+	}
+}
+
+func (c Config) Summary() string {
+	return fmt.Sprintf("socket=%s webhook_base=%s log_level=%s log_format=%s shutdown_timeout=%s", c.SocketPath, c.WebhookBaseURL, c.LogLevel, c.LogFormat, c.ShutdownTimeout)
+}
+

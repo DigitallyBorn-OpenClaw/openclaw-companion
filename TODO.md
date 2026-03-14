@@ -1,10 +1,9 @@
 # TODO
 
 ## In Progress
-- Define initial service skeleton (startup, config loading, structured logging).
+- Define Unix domain socket API contract for OpenClaw tool requests.
 
 ## Pending
-- Define Unix domain socket API contract for OpenClaw tool requests.
 - Design authn/authz and file-permission model for socket access.
 - Implement Gmail Pub/Sub consumer for new message notifications.
 - Implement OpenClaw webhook notifier with retry/backoff strategy.

@@ -116,6 +116,18 @@ func (r *Registry) registerSystemMethods() {
 					"encoding":  "json",
 					"framing":   "json-stream",
 				},
+				"events": []map[string]interface{}{
+					{
+						"name":        "gmail.new_message",
+						"delivery":    "openclaw-webhook",
+						"description": "Sent when the Pub/Sub consumer receives a new Gmail notification.",
+						"payload": map[string]interface{}{
+							"account":     map[string]interface{}{"type": "string", "required": true},
+							"history_id":  map[string]interface{}{"type": "string", "required": true},
+							"received_at": map[string]interface{}{"type": "RFC3339 timestamp", "required": true},
+						},
+					},
+				},
 				"methods": r.Discover(),
 			}, nil
 		},

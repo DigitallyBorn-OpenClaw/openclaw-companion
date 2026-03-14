@@ -23,7 +23,7 @@ func Register(registry *api.Registry, services Services) error {
 		Description: "Returns a Gmail message by message ID.",
 		Usage:       `{"id":"2","method":"gmail.getMessage","params":{"message_id":"18c2b"}}`,
 		Params: map[string]interface{}{
-			"message_id": map[string]string{"type": "string", "required": "true"},
+			"message_id": map[string]interface{}{"type": "string", "required": true},
 		},
 		Handler: newGmailGetMessageHandler(services.Gmail),
 	}); err != nil {
@@ -35,10 +35,10 @@ func Register(registry *api.Registry, services Services) error {
 		Description: "Returns calendar events for a time window.",
 		Usage:       `{"id":"3","method":"calendar.listEvents","params":{"start":"2026-03-14T00:00:00Z","end":"2026-03-15T00:00:00Z","calendar_id":"primary","max_results":20}}`,
 		Params: map[string]interface{}{
-			"calendar_id": map[string]string{"type": "string", "required": "false", "default": "primary"},
-			"start":       map[string]string{"type": "RFC3339 timestamp", "required": "true"},
-			"end":         map[string]string{"type": "RFC3339 timestamp", "required": "true"},
-			"max_results": map[string]string{"type": "integer", "required": "false", "default": "20", "max": "100"},
+			"calendar_id": map[string]interface{}{"type": "string", "required": false, "default": "primary"},
+			"start":       map[string]interface{}{"type": "RFC3339 timestamp", "required": true},
+			"end":         map[string]interface{}{"type": "RFC3339 timestamp", "required": true},
+			"max_results": map[string]interface{}{"type": "integer", "required": false, "default": 20, "max": 100},
 		},
 		Handler: newCalendarListEventsHandler(services.Calendar),
 	}); err != nil {

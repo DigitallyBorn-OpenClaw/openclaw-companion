@@ -11,15 +11,15 @@ const (
 )
 
 type Request struct {
-	ID     string          `json:"id"`
+	ID     json.RawMessage `json:"id,omitempty"`
 	Method string          `json:"method"`
 	Params json.RawMessage `json:"params,omitempty"`
 }
 
 type Response struct {
-	ID     string      `json:"id,omitempty"`
-	Result interface{} `json:"result,omitempty"`
-	Error  *Error      `json:"error,omitempty"`
+	ID     json.RawMessage `json:"id,omitempty"`
+	Result interface{}     `json:"result,omitempty"`
+	Error  *Error          `json:"error,omitempty"`
 }
 
 type Error struct {
@@ -28,11 +28,11 @@ type Error struct {
 	Details interface{} `json:"details,omitempty"`
 }
 
-func Success(id string, result interface{}) Response {
+func Success(id json.RawMessage, result interface{}) Response {
 	return Response{ID: id, Result: result}
 }
 
-func Failure(id string, code int, message string, details interface{}) Response {
+func Failure(id json.RawMessage, code int, message string, details interface{}) Response {
 	return Response{
 		ID: id,
 		Error: &Error{

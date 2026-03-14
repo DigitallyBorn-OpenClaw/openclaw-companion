@@ -18,6 +18,8 @@
 }
 ```
 
+`id` may be a string or number and is echoed in the response.
+
 ## Response Shape
 Success:
 ```json
@@ -42,7 +44,7 @@ Error:
 
 ## Discovery Method
 - Method: `system.discover`
-- Purpose: enumerate method metadata (name, description, usage, and params schema hints).
+- Purpose: enumerate method metadata (name, description, usage, and params schema hints), plus event-delivery metadata.
 
 ## Initial Tool Methods
 - Method: `gmail.getMessage`
@@ -73,3 +75,6 @@ Error:
 ## Baseline System Method
 - Method: `system.ping`
 - Purpose: liveness check.
+
+## Event Metadata
+Discovery also returns event metadata for webhook-delivered asynchronous notifications, including the initial `gmail.new_message` event contract.

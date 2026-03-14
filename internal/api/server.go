@@ -32,7 +32,7 @@ func ServeConnection(ctx context.Context, logger *slog.Logger, conn net.Conn, re
 			}
 
 			logger.Warn("request decode error", "error", err)
-			if writeErr := encoder.Encode(protocol.Failure("", protocol.CodeParseError, "invalid json request", nil)); writeErr != nil {
+			if writeErr := encoder.Encode(protocol.Failure(nil, protocol.CodeParseError, "invalid json request", nil)); writeErr != nil {
 				logger.Warn("failed writing parse error response", "error", writeErr)
 			}
 

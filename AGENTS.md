@@ -25,3 +25,6 @@ This repository is for **oc-companion**, a companion process for OpenClaw.
 - Keep this file concise and durable (high-level decisions, not day-to-day logs).
 - Put short-term or transient details into `./.notes/YYYY-MM-DD.md`.
 - Track only pending and in-progress work in `TODO.md`.
+
+## Agent Startup Context Rule
+- At startup, an agent should read the two most recent files in `./.notes/` to quickly recover recent project context and progress.

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ricky/oc-companion/internal/api"
 	"github.com/ricky/oc-companion/internal/config"
+	"github.com/ricky/oc-companion/internal/tools"
 )
 
 type App struct {
@@ -23,6 +24,9 @@ func New(cfg config.Config) *App {
 func (a *App) Run(ctx context.Context) error {
 	logger := slog.Default()
 	registry := api.NewRegistry()
+	if err := tools.Register(registry, tools.NewUnavailableServices()); err != nil {
+		return err
+	}
 
 	if err := ensureSocketDir(a.cfg.SocketPath); err != nil {
 		return err

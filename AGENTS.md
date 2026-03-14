@@ -16,11 +16,20 @@ This repository is for **oc-companion**, a companion process for OpenClaw.
 - OpenClaw receives asynchronous events through webhook callbacks.
 - Primary implementation language: Go.
 - Service bootstrap includes environment-based config and structured `slog` logging.
+- Client protocol: JSON request/response stream over Unix domain sockets.
+- Discovery endpoint: `system.discover` returns method metadata and webhook event metadata.
+- Minimal client sequence: connect -> discover -> invoke tool methods on same socket.
 
 ## Initial Tooling Scope
 - Notify OpenClaw when a new Gmail message is received (via GCP-hosted Pub/Sub topic).
 - Provide OpenClaw with requested Gmail message content.
 - Provide OpenClaw with requested Google Calendar events.
+
+## Implemented Socket Methods (Current)
+- `system.ping`
+- `system.discover`
+- `gmail.getMessage` (integration placeholder)
+- `calendar.listEvents` (integration placeholder)
 
 ## Maintenance Rules
 - Keep this file updated for **large decisions** and **project direction changes**.

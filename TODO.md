@@ -1,13 +1,13 @@
 # TODO
 
 ## In Progress
-- Define Unix domain socket API contract for OpenClaw tool requests.
+- Implement Gmail Pub/Sub consumer for new message notifications.
 
 ## Pending
 - Design authn/authz and file-permission model for socket access.
-- Implement Gmail Pub/Sub consumer for new message notifications.
 - Implement OpenClaw webhook notifier with retry/backoff strategy.
-- Implement Gmail message retrieval tool endpoint.
-- Implement Google Calendar events retrieval tool endpoint.
+- Replace placeholder Gmail service with real Gmail API integration.
+- Replace placeholder Calendar service with real Calendar API integration.
 - Add provider credential management strategy (least privilege, rotation path).
 - Add operational docs for deployment as separate Linux user/process.
+- Add end-to-end socket protocol integration tests.

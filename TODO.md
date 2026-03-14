@@ -9,5 +9,4 @@
 - Replace placeholder Gmail service with real Gmail API integration.
 - Replace placeholder Calendar service with real Calendar API integration.
 - Add provider credential management strategy (least privilege, rotation path).
-- Add operational docs for deployment as separate Linux user/process.
 - Add end-to-end socket protocol integration tests.

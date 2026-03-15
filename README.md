@@ -18,6 +18,12 @@ It runs as a separate Linux process and user, exposes a narrow tool API over a U
 - Architecture guide (with diagram): `docs/architecture.md`
 - Socket protocol reference: `docs/socket-protocol.md`
 
+## Make Targets
+- `make build`: build native binary to `build/oc-companion`.
+- `make build-arm64`: build Linux arm64 binary to `build/oc-companion-linux-arm64`.
+- `make test`: run test suite.
+- `make fmt`: format Go packages.
+
 ## Quick Start
 1. Ensure Go is installed.
 2. Set required environment variables.

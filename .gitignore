@@ -1,0 +1,25 @@
+# Build outputs
+/build/
+
+# Local caches
+/.cache/
+
+# Local planning and notes
+/TODO.md
+/.notes/
+
+# Environment and logs
+/.env
+/.env.*
+*.log
+
+# Go test artifacts
+*.out
+coverage.txt
+
+# Editor/OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

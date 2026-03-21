@@ -24,6 +24,11 @@ It runs as a separate Linux process and user, exposes a narrow tool API over a U
 - `make test`: run test suite.
 - `make fmt`: format Go packages.
 
+## GitHub Actions CI/CD
+- Push and pull request workflows run `make test`, `make build`, and `make build-arm64`.
+- Tag pushes matching `v*` create a GitHub Release.
+- Release assets include `build/oc-companion` and `build/oc-companion-linux-arm64`.
+
 ## Quick Start
 1. Ensure Go is installed.
 2. Set required environment variables.

@@ -10,6 +10,7 @@ import (
 
 	"github.com/ricky/oc-companion/internal/api"
 	"github.com/ricky/oc-companion/internal/config"
+	"github.com/ricky/oc-companion/internal/events"
 	"github.com/ricky/oc-companion/internal/tools"
 )
 
@@ -25,6 +26,11 @@ func (a *App) Run(ctx context.Context) error {
 	logger := slog.Default()
 	registry := api.NewRegistry()
 	if err := tools.Register(registry, tools.NewUnavailableServices()); err != nil {
+		return err
+	}
+
+	eventWorker, err := newEventWorker(ctx, a.cfg, logger)
+	if err != nil {
 		return err
 	}
 
@@ -55,6 +61,36 @@ func (a *App) Run(ctx context.Context) error {
 		_ = listener.Close()
 	}()
 
+	errCh := make(chan error, 2)
+	go func() {
+		errCh <- eventWorker.Run(ctx)
+	}()
+	go func() {
+		errCh <- serveSocket(ctx, listener, logger, registry)
+	}()
+
+	for {
+		select {
+		case err := <-errCh:
+			if err != nil {
+				return err
+			}
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+}
+
+func newEventWorker(ctx context.Context, cfg config.Config, logger *slog.Logger) (events.Worker, error) {
+	receiver, err := events.NewGCPPubSubReceiver(ctx, cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return events.NewService(logger, receiver, events.NewWebhookNotifier(cfg.GmailWebhookURL, cfg.GmailWebhookToken)), nil
+}
+
+func serveSocket(ctx context.Context, listener net.Listener, logger *slog.Logger, registry *api.Registry) error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {

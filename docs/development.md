@@ -16,7 +16,10 @@
 3. Set required env vars.
 
 ```bash
-export OC_OPENCLAW_WEBHOOK_BASE_URL="http://127.0.0.1:8080/webhooks"
+export OC_OPENCLAW_GMAIL_WEBHOOK_URL="http://127.0.0.1:8080/hooks/gmail"
+export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
+export OC_GCP_PROJECT_ID="my-gcp-project"
+export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 ```
 
 ## Build and Test
@@ -57,3 +60,4 @@ gofmt -w ./cmd ./internal
 - Keep socket path in a restricted directory.
 - Grant socket access only to authorized local principals.
 - Use webhook URL routing controlled by trusted local/network boundaries.
+- Store the OpenClaw webhook token and GCP credentials file with `0600` permissions.

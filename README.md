@@ -8,6 +8,10 @@ It runs as a separate Linux process and user, exposes a narrow tool API over a U
 - Go service bootstrap is implemented.
 - JSON socket protocol is implemented.
 - Tool discovery endpoint is implemented.
+- Gmail Pub/Sub event bridge is implemented:
+  - Creates a dedicated Pub/Sub subscription on startup.
+  - Deletes that subscription during shutdown.
+  - Relays Gmail notification events to the configured OpenClaw webhook.
 - Initial tool methods are implemented with placeholder provider integrations:
   - `gmail.getMessage`
   - `calendar.listEvents`
@@ -65,7 +69,10 @@ curl -fsSL https://raw.githubusercontent.com/DigitallyBorn/oc-companion/main/scr
 Example:
 
 ```bash
-export OC_OPENCLAW_WEBHOOK_BASE_URL="http://127.0.0.1:8080/webhooks"
+export OC_OPENCLAW_GMAIL_WEBHOOK_URL="http://127.0.0.1:8080/hooks/gmail"
+export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
+export OC_GCP_PROJECT_ID="my-gcp-project"
+export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 go run ./cmd/oc-companion
 ```
 

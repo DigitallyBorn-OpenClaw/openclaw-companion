@@ -60,8 +60,8 @@ Implemented now:
 - Socket server and JSON protocol.
 - Discovery endpoint and method metadata.
 - Initial tool method contracts.
+- Gmail Pub/Sub consumer with authenticated webhook delivery to OpenClaw.
 
 Planned next:
 - Real Gmail and Calendar API integrations.
-- Pub/Sub consumer and webhook notifier.
 - Hardened authz model for socket access.

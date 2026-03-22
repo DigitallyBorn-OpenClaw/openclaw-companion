@@ -6,27 +6,38 @@
 ## Prerequisites
 - Linux environment with Unix domain sockets.
 - Go toolchain available for local runs.
-- A reachable OpenClaw webhook base URL.
+- A reachable OpenClaw gateway on `127.0.0.1:18789` or an override URL for Gmail webhooks.
+- A GCP project with an existing Gmail Pub/Sub topic.
 
 ## Configuration
 `oc-companion` reads configuration from environment variables.
 
 Required:
-- `OC_OPENCLAW_WEBHOOK_BASE_URL`
+- `OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN`
+- `OC_GCP_PROJECT_ID`
+- `OC_GCP_GMAIL_PUBSUB_TOPIC_ID`
 
 Optional:
+- `OC_OPENCLAW_GMAIL_WEBHOOK_URL` (default: `http://127.0.0.1:18789/hooks/gmail`)
+- `OC_GCP_CREDENTIALS_FILE` (if omitted, Application Default Credentials are used)
+- `OC_GCP_PUBSUB_SUBSCRIPTION_PREFIX` (default: `oc-companion-gmail`)
 - `OC_COMPANION_SOCKET_PATH` (default: `/run/oc-companion/companion.sock`)
 - `OC_COMPANION_LOG_LEVEL` (`debug`, `info`, `warn`, `error`; default: `info`)
 - `OC_COMPANION_LOG_FORMAT` (`text` or `json`; default: `text`)
 - `OC_COMPANION_SHUTDOWN_TIMEOUT` (duration like `10s` or integer seconds; default: `10s`)
+- `OC_OPENCLAW_WEBHOOK_BASE_URL` (legacy alias for `OC_OPENCLAW_GMAIL_WEBHOOK_URL`)
 
 ## Running
 
 ```bash
-export OC_OPENCLAW_WEBHOOK_BASE_URL="http://127.0.0.1:8080/webhooks"
+export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
+export OC_GCP_PROJECT_ID="my-gcp-project"
+export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 export OC_COMPANION_SOCKET_PATH="/tmp/oc-companion.sock"
 go run ./cmd/oc-companion
 ```
+
+If you do not set `OC_OPENCLAW_GMAIL_WEBHOOK_URL`, `oc-companion` posts Gmail notifications to `http://127.0.0.1:18789/hooks/gmail`.
 
 ## Client Interaction (Simplest Path)
 1. Connect to the Unix socket.
@@ -67,3 +78,5 @@ Calendar events lookup (contract in place; provider integration pending):
 - Stale socket files are cleaned up when safe.
 - Socket permissions are set to `0660`.
 - Invalid JSON requests return a protocol parse error.
+- A dedicated Pub/Sub subscription is created on startup and deleted during shutdown.
+- Pub/Sub messages are acknowledged only after the OpenClaw webhook returns a `2xx` response.

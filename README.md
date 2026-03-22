@@ -69,11 +69,12 @@ curl -fsSL https://raw.githubusercontent.com/DigitallyBorn/oc-companion/main/scr
 Example:
 
 ```bash
-export OC_OPENCLAW_GMAIL_WEBHOOK_URL="http://127.0.0.1:8080/hooks/gmail"
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 go run ./cmd/oc-companion
 ```
+
+If `OC_OPENCLAW_GMAIL_WEBHOOK_URL` is not set, `oc-companion` defaults to `http://127.0.0.1:18789/hooks/gmail`.
 
 Then connect to the configured Unix socket and call `system.discover` first to enumerate available tools and metadata.

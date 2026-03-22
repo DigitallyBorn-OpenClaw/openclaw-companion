@@ -6,19 +6,19 @@
 ## Prerequisites
 - Linux environment with Unix domain sockets.
 - Go toolchain available for local runs.
-- A reachable OpenClaw Gmail webhook URL.
+- A reachable OpenClaw gateway on `127.0.0.1:18789` or an override URL for Gmail webhooks.
 - A GCP project with an existing Gmail Pub/Sub topic.
 
 ## Configuration
 `oc-companion` reads configuration from environment variables.
 
 Required:
-- `OC_OPENCLAW_GMAIL_WEBHOOK_URL`
 - `OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN`
 - `OC_GCP_PROJECT_ID`
 - `OC_GCP_GMAIL_PUBSUB_TOPIC_ID`
 
 Optional:
+- `OC_OPENCLAW_GMAIL_WEBHOOK_URL` (default: `http://127.0.0.1:18789/hooks/gmail`)
 - `OC_GCP_CREDENTIALS_FILE` (if omitted, Application Default Credentials are used)
 - `OC_GCP_PUBSUB_SUBSCRIPTION_PREFIX` (default: `oc-companion-gmail`)
 - `OC_COMPANION_SOCKET_PATH` (default: `/run/oc-companion/companion.sock`)
@@ -30,13 +30,14 @@ Optional:
 ## Running
 
 ```bash
-export OC_OPENCLAW_GMAIL_WEBHOOK_URL="http://127.0.0.1:8080/hooks/gmail"
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 export OC_COMPANION_SOCKET_PATH="/tmp/oc-companion.sock"
 go run ./cmd/oc-companion
 ```
+
+If you do not set `OC_OPENCLAW_GMAIL_WEBHOOK_URL`, `oc-companion` posts Gmail notifications to `http://127.0.0.1:18789/hooks/gmail`.
 
 ## Client Interaction (Simplest Path)
 1. Connect to the Unix socket.

@@ -11,6 +11,7 @@ import (
 
 const (
 	defaultAddr            = "/run/oc-companion/companion.sock"
+	defaultGmailWebhookURL = "http://127.0.0.1:18789/hooks/gmail"
 	defaultShutdownTimeout = 10 * time.Second
 	defaultLogLevel        = "info"
 	defaultLogFormat       = "text"
@@ -32,7 +33,7 @@ type Config struct {
 func Load() (Config, error) {
 	cfg := Config{
 		SocketPath:               getEnv("OC_COMPANION_SOCKET_PATH", defaultAddr),
-		GmailWebhookURL:          getFirstEnv("OC_OPENCLAW_GMAIL_WEBHOOK_URL", "OC_OPENCLAW_WEBHOOK_BASE_URL"),
+		GmailWebhookURL:          getFirstEnvWithFallback(defaultGmailWebhookURL, "OC_OPENCLAW_GMAIL_WEBHOOK_URL", "OC_OPENCLAW_WEBHOOK_BASE_URL"),
 		GmailWebhookToken:        strings.TrimSpace(os.Getenv("OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN")),
 		GCPProjectID:             strings.TrimSpace(os.Getenv("OC_GCP_PROJECT_ID")),
 		GmailPubSubTopicID:       strings.TrimSpace(os.Getenv("OC_GCP_GMAIL_PUBSUB_TOPIC_ID")),
@@ -41,10 +42,6 @@ func Load() (Config, error) {
 		LogLevel:                 normalizeLevel(getEnv("OC_COMPANION_LOG_LEVEL", defaultLogLevel)),
 		LogFormat:                normalizeFormat(getEnv("OC_COMPANION_LOG_FORMAT", defaultLogFormat)),
 		ShutdownTimeout:          getEnvDuration("OC_COMPANION_SHUTDOWN_TIMEOUT", defaultShutdownTimeout),
-	}
-
-	if cfg.GmailWebhookURL == "" {
-		return Config{}, errors.New("OC_OPENCLAW_GMAIL_WEBHOOK_URL is required")
 	}
 
 	if cfg.GmailWebhookToken == "" {
@@ -83,6 +80,14 @@ func getFirstEnv(keys ...string) string {
 	}
 
 	return ""
+}
+
+func getFirstEnvWithFallback(fallback string, keys ...string) string {
+	if value := getFirstEnv(keys...); value != "" {
+		return value
+	}
+
+	return fallback
 }
 
 func getEnvDuration(key string, fallback time.Duration) time.Duration {

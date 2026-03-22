@@ -16,11 +16,12 @@
 3. Set required env vars.
 
 ```bash
-export OC_OPENCLAW_GMAIL_WEBHOOK_URL="http://127.0.0.1:8080/hooks/gmail"
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
 ```
+
+By default, the companion sends Gmail event callbacks to `http://127.0.0.1:18789/hooks/gmail`.
 
 ## Build and Test
 Build:

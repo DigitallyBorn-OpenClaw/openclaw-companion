@@ -12,9 +12,9 @@ It runs as a separate Linux process and user, exposes a narrow tool API over a U
   - Creates a dedicated Pub/Sub subscription on startup.
   - Deletes that subscription during shutdown.
   - Relays Gmail notification events to the configured OpenClaw webhook.
-- Initial tool methods are implemented with placeholder provider integrations:
+- Initial tool methods are available:
   - `gmail.getMessage`
-  - `calendar.listEvents`
+  - `calendar.listEvents` (provider integration placeholder)
 
 ## Documentation
 - Usage guide: `docs/usage.md`
@@ -72,9 +72,16 @@ Example:
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
+export OC_GCP_CREDENTIALS_FILE="/var/lib/oc-companion/gcp-credentials.json"
+export OC_GMAIL_DELEGATED_SUBJECT="user@example.com"
+export OC_GMAIL_USER_ID="user@example.com"
 go run ./cmd/oc-companion
 ```
 
 If `OC_OPENCLAW_GMAIL_WEBHOOK_URL` is not set, `oc-companion` defaults to `http://127.0.0.1:18789/hooks/gmail`.
+
+`gmail.getMessage` uses the same Google credential chain as the Pub/Sub receiver and fetches full Gmail message payloads so body fallback works when `snippet` is empty.
+Those credentials must also be authorized for Gmail readonly access to the mailbox being queried.
+If you use a service account, set `OC_GMAIL_DELEGATED_SUBJECT` to the mailbox user and optionally `OC_GMAIL_USER_ID` to the mailbox address you want Gmail API calls to target.
 
 Then connect to the configured Unix socket and call `system.discover` first to enumerate available tools and metadata.

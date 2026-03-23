@@ -21,6 +21,8 @@ type Config struct {
 	SocketPath               string
 	GmailWebhookURL          string
 	GmailWebhookToken        string
+	GmailUserID              string
+	GmailDelegatedSubject    string
 	GCPProjectID             string
 	GmailPubSubTopicID       string
 	GCPCredentialsFile       string
@@ -35,6 +37,8 @@ func Load() (Config, error) {
 		SocketPath:               getEnv("OC_COMPANION_SOCKET_PATH", defaultAddr),
 		GmailWebhookURL:          getFirstEnvWithFallback(defaultGmailWebhookURL, "OC_OPENCLAW_GMAIL_WEBHOOK_URL", "OC_OPENCLAW_WEBHOOK_BASE_URL"),
 		GmailWebhookToken:        strings.TrimSpace(os.Getenv("OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN")),
+		GmailUserID:              strings.TrimSpace(os.Getenv("OC_GMAIL_USER_ID")),
+		GmailDelegatedSubject:    strings.TrimSpace(os.Getenv("OC_GMAIL_DELEGATED_SUBJECT")),
 		GCPProjectID:             strings.TrimSpace(os.Getenv("OC_GCP_PROJECT_ID")),
 		GmailPubSubTopicID:       strings.TrimSpace(os.Getenv("OC_GCP_GMAIL_PUBSUB_TOPIC_ID")),
 		GCPCredentialsFile:       strings.TrimSpace(os.Getenv("OC_GCP_CREDENTIALS_FILE")),
@@ -132,9 +136,11 @@ func normalizeFormat(value string) string {
 
 func (c Config) Summary() string {
 	return fmt.Sprintf(
-		"socket=%s gmail_webhook=%s gcp_project=%s gmail_topic=%s subscription_prefix=%s log_level=%s log_format=%s shutdown_timeout=%s",
+		"socket=%s gmail_webhook=%s gmail_user=%s gmail_delegated_subject=%t gcp_project=%s gmail_topic=%s subscription_prefix=%s log_level=%s log_format=%s shutdown_timeout=%s",
 		c.SocketPath,
 		c.GmailWebhookURL,
+		summaryGmailUserID(c.GmailUserID),
+		c.GmailDelegatedSubject != "",
 		c.GCPProjectID,
 		c.GmailPubSubTopicID,
 		c.PubSubSubscriptionPrefix,
@@ -164,6 +170,15 @@ func sanitizeSubscriptionPrefix(value string) string {
 	}
 	if value[0] < 'a' || value[0] > 'z' {
 		return "oc-" + value
+	}
+
+	return value
+}
+
+func summaryGmailUserID(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "me"
 	}
 
 	return value

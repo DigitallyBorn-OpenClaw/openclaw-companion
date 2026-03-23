@@ -25,7 +25,12 @@ func New(cfg config.Config) *App {
 func (a *App) Run(ctx context.Context) error {
 	logger := slog.Default()
 	registry := api.NewRegistry()
-	if err := tools.Register(registry, tools.NewUnavailableServices()); err != nil {
+	services, err := newServices(ctx, a.cfg)
+	if err != nil {
+		return err
+	}
+
+	if err := tools.Register(registry, services); err != nil {
 		return err
 	}
 
@@ -79,6 +84,21 @@ func (a *App) Run(ctx context.Context) error {
 			return ctx.Err()
 		}
 	}
+}
+
+func newServices(ctx context.Context, cfg config.Config) (tools.Services, error) {
+	gmailService, err := tools.NewGmailService(ctx, tools.GmailServiceConfig{
+		CredentialsFile:  cfg.GCPCredentialsFile,
+		UserID:           cfg.GmailUserID,
+		DelegatedSubject: cfg.GmailDelegatedSubject,
+	})
+	if err != nil {
+		return tools.Services{}, err
+	}
+
+	services := tools.NewUnavailableServices()
+	services.Gmail = gmailService
+	return services, nil
 }
 
 func newEventWorker(ctx context.Context, cfg config.Config, logger *slog.Logger) (events.Worker, error) {

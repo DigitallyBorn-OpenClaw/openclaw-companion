@@ -33,11 +33,14 @@ Optional:
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
+export OC_GCP_CREDENTIALS_FILE="/var/lib/oc-companion/gcp-credentials.json"
 export OC_COMPANION_SOCKET_PATH="/tmp/oc-companion.sock"
 go run ./cmd/oc-companion
 ```
 
 If you do not set `OC_OPENCLAW_GMAIL_WEBHOOK_URL`, `oc-companion` posts Gmail notifications to `http://127.0.0.1:18789/hooks/gmail`.
+
+For `gmail.getMessage`, the configured Google credentials must also be able to read the target mailbox with Gmail readonly access.
 
 ## Client Interaction (Simplest Path)
 1. Connect to the Unix socket.
@@ -61,13 +64,13 @@ Ping:
 {"id":"2","method":"system.ping"}
 ```
 
-Gmail message lookup (contract in place; provider integration pending):
+Gmail message lookup:
 
 ```json
 {"id":"3","method":"gmail.getMessage","params":{"message_id":"18c2b"}}
 ```
 
-Calendar events lookup (contract in place; provider integration pending):
+Calendar events lookup (provider integration pending):
 
 ```json
 {"id":"4","method":"calendar.listEvents","params":{"start":"2026-03-14T00:00:00Z","end":"2026-03-15T00:00:00Z","max_results":10}}

@@ -19,9 +19,11 @@
 export OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN="replace-me"
 export OC_GCP_PROJECT_ID="my-gcp-project"
 export OC_GCP_GMAIL_PUBSUB_TOPIC_ID="gmail-notifications"
+export OC_GCP_CREDENTIALS_FILE="/var/lib/oc-companion/gcp-credentials.json"
 ```
 
 By default, the companion sends Gmail event callbacks to `http://127.0.0.1:18789/hooks/gmail`.
+Those credentials must be valid for both Pub/Sub access and Gmail readonly message retrieval if you want `gmail.getMessage` to work locally.
 
 ## Build and Test
 Build:

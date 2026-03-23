@@ -36,6 +36,41 @@ func TestLoad_AllowsLegacyWebhookEnvName(t *testing.T) {
 	}
 }
 
+func TestLoad_DefaultsGmailUserIDAndAllowsDelegatedSubject(t *testing.T) {
+	t.Setenv("OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN", "secret-token")
+	t.Setenv("OC_GCP_PROJECT_ID", "my-project")
+	t.Setenv("OC_GCP_GMAIL_PUBSUB_TOPIC_ID", "gmail-topic")
+	t.Setenv("OC_GMAIL_DELEGATED_SUBJECT", "delegate@example.com")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected config to load: %v", err)
+	}
+
+	if cfg.GmailUserID != "" {
+		t.Fatalf("expected empty configured gmail user id, got %q", cfg.GmailUserID)
+	}
+	if cfg.GmailDelegatedSubject != "delegate@example.com" {
+		t.Fatalf("expected delegated subject, got %q", cfg.GmailDelegatedSubject)
+	}
+}
+
+func TestLoad_AllowsCustomGmailUserID(t *testing.T) {
+	t.Setenv("OC_OPENCLAW_GMAIL_WEBHOOK_TOKEN", "secret-token")
+	t.Setenv("OC_GCP_PROJECT_ID", "my-project")
+	t.Setenv("OC_GCP_GMAIL_PUBSUB_TOPIC_ID", "gmail-topic")
+	t.Setenv("OC_GMAIL_USER_ID", "mailbox@example.com")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("expected config to load: %v", err)
+	}
+
+	if cfg.GmailUserID != "mailbox@example.com" {
+		t.Fatalf("expected custom gmail user id, got %q", cfg.GmailUserID)
+	}
+}
+
 func TestSanitizeSubscriptionPrefix(t *testing.T) {
 	got := sanitizeSubscriptionPrefix("123 bad.prefix")
 	if got != "oc-123-bad-prefix" {

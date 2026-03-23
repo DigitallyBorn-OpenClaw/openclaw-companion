@@ -73,21 +73,21 @@ func TestGmailAPIServiceGetMessage_UsesMetadataFormatAndNormalizesMessage(t *tes
 		},
 	}
 	api := &fakeGmailMessagesAPI{call: call}
-	service := &gmailAPIService{messages: api}
+	service := &gmailAPIService{messages: api, userID: "mailbox@example.com"}
 
 	message, err := service.GetMessage(context.Background(), "msg-1")
 	if err != nil {
 		t.Fatalf("expected success, got %v", err)
 	}
 
-	if api.userID != "me" {
-		t.Fatalf("expected userID me, got %q", api.userID)
+	if api.userID != "mailbox@example.com" {
+		t.Fatalf("expected configured userID, got %q", api.userID)
 	}
 	if api.messageID != "msg-1" {
 		t.Fatalf("expected message id to be forwarded, got %q", api.messageID)
 	}
-	if call.format != "metadata" {
-		t.Fatalf("expected metadata format, got %q", call.format)
+	if call.format != "full" {
+		t.Fatalf("expected full format, got %q", call.format)
 	}
 	if message.Subject != "Hello ✓" {
 		t.Fatalf("expected decoded subject, got %q", message.Subject)
@@ -98,6 +98,38 @@ func TestGmailAPIServiceGetMessage_UsesMetadataFormatAndNormalizesMessage(t *tes
 	expectedReceivedAt := time.UnixMilli(1710117296000).UTC()
 	if !message.ReceivedAt.Equal(expectedReceivedAt) {
 		t.Fatalf("expected received_at %s, got %s", expectedReceivedAt, message.ReceivedAt)
+	}
+}
+
+func TestResolveGmailUserID(t *testing.T) {
+	tests := []struct {
+		name             string
+		userID           string
+		delegatedSubject string
+		want             string
+	}{
+		{
+			name: "defaults to me",
+			want: "me",
+		},
+		{
+			name:   "uses explicit user id",
+			userID: "mailbox@example.com",
+			want:   "mailbox@example.com",
+		},
+		{
+			name:             "falls back to delegated subject",
+			delegatedSubject: "delegate@example.com",
+			want:             "delegate@example.com",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := resolveGmailUserID(tt.userID, tt.delegatedSubject); got != tt.want {
+				t.Fatalf("expected user id %q, got %q", tt.want, got)
+			}
+		})
 	}
 }
 

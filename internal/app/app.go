@@ -87,7 +87,11 @@ func (a *App) Run(ctx context.Context) error {
 }
 
 func newServices(ctx context.Context, cfg config.Config) (tools.Services, error) {
-	gmailService, err := tools.NewGmailService(ctx, cfg.GCPCredentialsFile)
+	gmailService, err := tools.NewGmailService(ctx, tools.GmailServiceConfig{
+		CredentialsFile:  cfg.GCPCredentialsFile,
+		UserID:           cfg.GmailUserID,
+		DelegatedSubject: cfg.GmailDelegatedSubject,
+	})
 	if err != nil {
 		return tools.Services{}, err
 	}

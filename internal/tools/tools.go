@@ -25,6 +25,12 @@ type CalendarEvent struct {
 	Location    string    `json:"location,omitempty"`
 }
 
+type GmailServiceConfig struct {
+	CredentialsFile  string
+	UserID           string
+	DelegatedSubject string
+}
+
 type GmailService interface {
 	GetMessage(context.Context, string) (GmailMessage, error)
 }

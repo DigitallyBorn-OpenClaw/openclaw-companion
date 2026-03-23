@@ -8,9 +8,12 @@ import (
 	"html"
 	"mime"
 	"net/mail"
+	"os"
 	"strings"
 	"time"
 
+	"golang.org/x/oauth2"
+	googoauth "golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
@@ -32,24 +35,23 @@ type googleCallOption = googleapi.CallOption
 
 type gmailAPIService struct {
 	messages gmailMessagesAPI
+	userID   string
 }
 
-func NewGmailService(ctx context.Context, credentialsFile string) (GmailService, error) {
-	options := []option.ClientOption{option.WithScopes(gmailReadonlyScope)}
-	if credentialsFile = strings.TrimSpace(credentialsFile); credentialsFile != "" {
-		options = append(options, option.WithCredentialsFile(credentialsFile))
-	}
-
-	service, err := gmail.NewService(ctx, options...)
+func NewGmailService(ctx context.Context, cfg GmailServiceConfig) (GmailService, error) {
+	service, err := newGmailAPIClient(ctx, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("create gmail service: %w", err)
+		return nil, err
 	}
 
-	return &gmailAPIService{messages: &gmailMessagesClient{service: service.Users.Messages}}, nil
+	return &gmailAPIService{
+		messages: &gmailMessagesClient{service: service.Users.Messages},
+		userID:   resolveGmailUserID(cfg.UserID, cfg.DelegatedSubject),
+	}, nil
 }
 
 func (s *gmailAPIService) GetMessage(ctx context.Context, messageID string) (GmailMessage, error) {
-	message, err := s.messages.Get("me", messageID).Format("metadata").Context(ctx).Do()
+	message, err := s.messages.Get(s.userID, messageID).Format("full").Context(ctx).Do()
 	if err != nil {
 		return GmailMessage{}, fmt.Errorf("gmail messages.get %q: %w", messageID, err)
 	}
@@ -81,6 +83,73 @@ func (c *gmailMessageCall) Context(ctx context.Context) gmailMessageGetCall {
 
 func (c *gmailMessageCall) Do(opts ...googleCallOption) (*gmail.Message, error) {
 	return c.call.Do(opts...)
+}
+
+func newGmailAPIClient(ctx context.Context, cfg GmailServiceConfig) (*gmail.Service, error) {
+	if strings.TrimSpace(cfg.DelegatedSubject) == "" {
+		options := []option.ClientOption{option.WithScopes(gmailReadonlyScope)}
+		if credentialsFile := strings.TrimSpace(cfg.CredentialsFile); credentialsFile != "" {
+			options = append(options, option.WithCredentialsFile(credentialsFile))
+		}
+
+		service, err := gmail.NewService(ctx, options...)
+		if err != nil {
+			return nil, fmt.Errorf("create gmail service: %w", err)
+		}
+
+		return service, nil
+	}
+
+	tokenSource, err := newDelegatedTokenSource(ctx, cfg.CredentialsFile, cfg.DelegatedSubject)
+	if err != nil {
+		return nil, err
+	}
+
+	service, err := gmail.NewService(ctx, option.WithTokenSource(tokenSource))
+	if err != nil {
+		return nil, fmt.Errorf("create gmail service: %w", err)
+	}
+
+	return service, nil
+}
+
+func newDelegatedTokenSource(ctx context.Context, credentialsFile string, delegatedSubject string) (oauth2.TokenSource, error) {
+	params := googoauth.CredentialsParams{
+		Scopes:  []string{gmailReadonlyScope},
+		Subject: strings.TrimSpace(delegatedSubject),
+	}
+
+	var (
+		creds *googoauth.Credentials
+		err   error
+	)
+
+	if credentialsFile = strings.TrimSpace(credentialsFile); credentialsFile != "" {
+		data, readErr := os.ReadFile(credentialsFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("read gmail credentials file: %w", readErr)
+		}
+
+		creds, err = googoauth.CredentialsFromJSONWithParams(ctx, data, params)
+	} else {
+		creds, err = googoauth.FindDefaultCredentialsWithParams(ctx, params)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("create delegated gmail credentials: %w", err)
+	}
+
+	return creds.TokenSource, nil
+}
+
+func resolveGmailUserID(userID string, delegatedSubject string) string {
+	if userID = strings.TrimSpace(userID); userID != "" {
+		return userID
+	}
+	if delegatedSubject = strings.TrimSpace(delegatedSubject); delegatedSubject != "" {
+		return delegatedSubject
+	}
+
+	return "me"
 }
 
 func normalizeGmailMessage(message *gmail.Message) (GmailMessage, error) {
